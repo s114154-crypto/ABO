@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABO 性別特質傾向測驗 - 進階版</title>
+    <style>
+        :root {
+            --primary-pink: #ffb7c5;
+            --accent-pink: #ff7675;
+            --alpha-color: #d63031;
+            --beta-color: #00b894;
+            --omega-color: #0984e3;
+            --text-dark: #2d3436;
+            --bg-soft: #fff5f7;
+        }
+
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-soft);
+            background-image: radial-gradient(#ffdada 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+            color: var(--text-dark);
+        }
+
+        .container {
+            background: white;
+            padding: 0;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(255, 118, 117, 0.2);
+            width: 95%;
+            max-width: 550px;
+            text-align: center;
+            overflow: hidden;
+            border: 5px solid white;
+        }
+
+        .content-padding {
+            padding: 2.5rem 2rem;
+        }
+
+        h1 { color: var(--accent-pink); margin-top: 0; font-size: 1.8rem; }
+        
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 15px 20px;
+            border: 2px solid var(--accent-pink);
+            background: white;
+            color: var(--accent-pink);
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: var(--accent-pink);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        .progress-inner {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-pink), var(--accent-pink));
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        #quiz, #result { display: none; }
+
+        /* 結果頁面樣式優化 */
+        .result-title { font-size: 2.5rem; font-weight: 900; margin: 10px 0; letter-spacing: 2px; }
+        .result-desc { text-align: left; line-height: 1.8; }
+        .result-section {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+        .section-label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--primary-pink);
+            width: fit-content;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .active-q { animation: slideUp 0.4s ease-out; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="content-padding">
+        <div id="intro">
+            <h1>心理性別測試</h1>
+            <p style="color: #666; line-height: 1.6;">探索你在 Omegaverse 世界觀中的隱性基因<br>本測驗將根據你的性格、社交傾向與潛意識反應，判定你是強大的 Alpha、穩定的 Beta 還是感性的 Omega。</p>
+            <button onclick="startQuiz()" style="background: var(--accent-pink); color: white; width: 100%; margin-top: 15px; font-size: 1.2rem;">開始探索屬性</button>
+        </div>
+
+        <div id="quiz">
+            <div class="progress-bar"><div class="progress-inner" id="progress"></div></div>
+            <div id="question-container"></div>
+        </div>
+
+        <div id="result">
+            <p style="color: #999; margin-bottom: 5px;">經過深度分析，你的隱性屬性為：</p>
+            <div id="result-type" class="result-title"></div>
+            
+            <div class="result-desc">
+                <div class="result-section">
+                    <span class="section-label">✦ 核心人格剖析</span>
+                    <span id="desc-core"></span>
+                </div>
+                <div class="result-section">
+                    <span class="section-label">✦ 社交與情感模式</span>
+                    <span id="desc-social"></span>
+                </div>
+                <div class="result-section">
+                    <span class="section-label">✦ 給你的建議</span>
+                    <span id="desc-advice"></span>
+                </div>
+            </div>
+            
+            <button onclick="location.reload()" style="margin-top: 30px; width: 100%;">重新測試</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "當你進入一個陌生的聚會場合，你會？", a: "主動環視四周，尋找掌握現場氣氛的切入點", b: "找一個舒適的位置坐下，安靜地觀察環境", c: "待在熟悉的人身邊，或是尋求溫暖的角落", scores: [3, 1, 0] },
+        { q: "你最無法忍受的事情是什麼？", a: "被挑戰權威或是失去事情的掌控權", b: "生活步調被打亂或是被迫處理混亂情緒", c: "被忽視、冷落或是感覺不到被需要", scores: [3, 1, 0] },
+        { q: "關於「氣味」，哪種形容更貼近你的感覺？", a: "我能敏感地察覺他人的情緒變化（信息素感官）", b: "氣味對我來說只是環境的一部分，不太受干擾", c: "特定的氣味會讓我產生強烈的生理或心理依賴", scores: [3, 1, 2] },
+        { q: "在一段關係中，你潛意識裡更傾向？", a: "成為對方的支柱，負責做決定並保護對方", b: "彼此對等獨立，過著平穩和諧的生活", c: "被對方呵護、寵溺，享受被照顧的安全感", scores: [3, 1, 0] },
+        { q: "當你情緒低落時，你通常會？", a: "獨自消化，不希望展現脆弱的一面", b: "找尋實際的方法解決問題，或是維持日常作息", c: "希望能有一個擁抱或是能傾聽你的人", scores: [3, 1, 0] },
+        { q: "你認為自己最大的魅力在於？", a: "強大的行動力與果敢的決斷心", b: "穩定且讓人感到安心的可靠感", c: "溫柔、細膩且具包容性的同理心", scores: [3, 1, 0] }
+    ];
+
+    let currentQuestion = 0;
+    let totalScore = 0;
+
+    function startQuiz() {
+        document.getElementById('intro').style.display = 'none';
+        document.getElementById('quiz').style.display = 'block';
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const container = document.getElementById('question-container');
+        const q = questions[currentQuestion];
+        container.innerHTML = `
+            <div class="active-q">
+                <h3 style="margin-bottom: 25px; line-height: 1.5;">${q.q}</h3>
+                <div class="btn-group">
+                    <button onclick="nextQuestion(${q.scores[0]})">${q.a}</button>
+                    <button onclick="nextQuestion(${q.scores[1]})">${q.b}</button>
+                    <button onclick="nextQuestion(${q.scores[2]})">${q.c}</button>
+                </div>
+            </div>`;
+        document.getElementById('progress').style.width = ((currentQuestion / questions.length) * 100) + '%';
+    }
+
+    function nextQuestion(score) {
+        totalScore += score;
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+            showQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz').style.display = 'none';
+        document.getElementById('result').style.display = 'block';
+        
+        const typeEl = document.getElementById('result-type');
+        const coreEl = document.getElementById('desc-core');
+        const socialEl = document.getElementById('desc-social');
+        const adviceEl = document.getElementById('desc-advice');
+
+        if (totalScore >= 14) {
+            typeEl.innerText = "ALPHA(領袖者)";
+            typeEl.style.color = "var(--alpha-color)";
+            coreEl.innerText = "你具備強大的領袖氣質，天生擁有支配環境的能力。你的意志力堅定，當大家猶豫不決時，你總是那個能站出來指引方向的人。";
+            socialEl.innerText = "在社交中你具有極強的侵略性（魅力），保護欲極強。你傾向於掌控關係的節奏，對於認定的夥伴或伴侶會給予百分之百的守護。";
+            adviceEl.innerText = "試著偶爾展現脆弱並非弱點，這會讓你顯得更具人性光輝，也能減輕你肩膀上過重的責任感。";
+        } else if (totalScore >= 7) {
+            typeEl.innerText = "BETA(平穩者)";
+            typeEl.style.color = "var(--beta-color)";
+            coreEl.innerText = "你是這個社會最穩定的基石。你擁有極高的情緒韌性與理性，不輕易隨波逐流，是那種在混亂中依然能保持冷靜的人。";
+            socialEl.innerText = "你追求平等、和諧的關係，不喜歡過度的支配或是過度的依賴。你是朋友眼中最可靠的避風港，大家總是在受傷後找你尋求平靜。";
+            adviceEl.innerText = "你的穩定是優點，但有時也可以試著打破規則，讓生活多一點驚喜與熱情，別讓平淡消磨了你的靈魂。";
+        } else {
+            typeEl.innerText = "OMEGA(感性者)";
+            typeEl.style.color = "var(--omega-color)";
+            coreEl.innerText = "你擁有極致的感性與細膩的靈魂。你對環境的覺察力極高，能捕捉到他人忽略的細微情感。你的柔中帶剛，是世界上最堅韌的力量。";
+            socialEl.innerText = "在關係中你渴望深度的靈魂連結。你善於療癒他人，你的存在本身就能緩解 Alpha 的暴戾或 Beta 的沉悶。你喜歡被照顧，但同時也能為愛付出一切。";
+            adviceEl.innerText = "多信任你的直覺，它是你的天賦。學會設立情緒界線，不要讓別人的情緒過度淹沒了你的內心。";
+        }
+    }
+</script>
+
+</body>
+</html>
